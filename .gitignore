@@ -1,1 +1,11 @@
 *.yml
+*.aux
+*.dvi
+*.log
+*.mov
+*.bbl
+*.blg
+*.xbb
+fig[0-9]*.pdf
+*.bb
+*.synctex.gz
