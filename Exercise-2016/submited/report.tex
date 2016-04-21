@@ -1,0 +1,73 @@
+\documentclass[fleqn, 14pt]{sty/extarticlej}
+\oddsidemargin=-1cm
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{indentfirst}
+\textwidth=18cm
+\textheight=23cm
+\topmargin=0cm
+\headheight=1cm
+\headsep=0cm
+\footskip=1cm
+
+\def\labelenumi{(\theenumi)}
+\def\theenumii{\Alph{enumii}}
+\def\theenumiii{(\alph{enumiii})}
+\def\：{\makebox[1zw][l]{：}}
+\usepackage{comment}
+\usepackage{url}
+\urlstyle{same}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% sty/ にある研究室独自のスタイルファイル
+\usepackage{jtygm}  % フォントに関する余計な警告を消す
+\usepackage{nutils} % insertfigure, figef, tabref マクロ
+
+\def\figdir{./figs} % 図のディレクトリ
+\def\figext{pdf}    % 図のファイルの拡張子
+
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 表題
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{center}
+{\Large {\bf 平成28年度GNグループB4新人研修課題　報告書}}
+
+\end{center}
+\begin{flushright}
+2016年04月21日\\
+
+乃村研究室 神澤 宏貴
+\end{flushright}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 概要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{概要}
+本資料は，平成28年度GNグループB4新人研修課題の報告書である．本資料では，課題内容，理解できなかった部分，自主的に作成した機能，および作成できなかった機能について述べる．
+
+\section{課題内容}
+課題内容は，RubyによるSlackBotプログラムの作成である．具体的には以下の2つを行う．
+\begin{enumerate}
+\item 任意の文字列を発言するプログラムの作成
+\item SlackBotプログラムへの機能追加
+\end{enumerate}
+本課題におけるRubyのバージョンは，2.1.5である．
+
+\section{理解できなかった部分}
+理解できなかった部分を以下に示す．
+\begin{enumerate}
+\item config.ruの動作
+\end{enumerate}
+\section{自主的に作成した機能}
+自主的に作成した機能を以下に示す．
+\begin{enumerate}
+\item 文字列と翻訳規則を含むメッセージに対し，文字列を翻訳して発言する機能
+\end{enumerate}
+\section{作成できなかった機能}
+作成できなかった機能を以下に示す．
+\begin{enumerate}
+\item 翻訳機能における翻訳規則の複数指定\\
+  具体的には，翻訳規則が``英→日→仏''のように指定された場合，入力された文字列を日本語に翻訳する．そして，日本語に翻訳された文字列をフランス語に翻訳する．Botは，日本語に翻訳された文字列とフランス語に翻訳された文字列を発言する．
+\end{enumerate}
+  
+\end{document}

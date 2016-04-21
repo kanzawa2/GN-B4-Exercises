@@ -1,0 +1,280 @@
+\documentclass[fleqn, 14pt]{sty/extarticlej}
+\oddsidemargin=-1cm
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{indentfirst}
+\textwidth=18cm
+\textheight=23cm
+\topmargin=0cm
+\headheight=1cm
+\headsep=0cm
+\footskip=1cm
+
+\def\labelenumi{(\theenumi)}
+\def\theenumii{\Alph{enumii}}
+\def\theenumiii{(\alph{enumiii})}
+\def\：{\makebox[1zw][l]{：}}
+\usepackage{comment}
+\usepackage{url}
+\urlstyle{same}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% sty/ にある研究室独自のスタイルファイル
+\usepackage{jtygm}  % フォントに関する余計な警告を消す
+\usepackage{nutils} % insertfigure, figef, tabref マクロ
+
+\def\figdir{./figs} % 図のディレクトリ
+\def\figext{pdf}    % 図のファイルの拡張子
+
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 表題
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{center}
+  {\Large {\bf SlackBotプログラムの仕様書}}
+
+\end{center}
+\begin{flushright}
+  2016年04月21日\\
+
+  乃村研究室 神澤 宏貴
+\end{flushright}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 概要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{概要}
+本資料は平成28年度GNグループB4新人研修課題のSlackBotの仕様についてまとめたものである．本プログラムは以下の2つの機能をもつ．
+\begin{enumerate}
+\item ``「○○」と言って''という文字列を含むメッセージに対し ，``〇〇''と発言する機能
+\item 文字列と翻訳規則を含むメッセージに対し，文字列を翻訳して発言する機能
+\end{enumerate}
+
+なお，いずれの場合も，メッセージの先頭に``@K-Bot''が付いていることを前提としている．
+
+\section{対象とする使用者}
+本プログラムは以下の3つのアカウントを所有する利用者を対象としている．
+\begin{enumerate}
+\item Slackアカウント
+\item Microsoftアカウント
+\end{enumerate}
+
+\section{機能}
+本プログラムが持つ2つの機能について述べる．
+\begin{description}
+\item{(機能1)} ``「○○」と言って''という文字列を含むメッセージに対し，適切に発言する機能\\
+  この機能は，メッセージ内に``「○○」と言って''という文字列があった場合，``○○''と発言する機能である．また，``「「○○」と言って」と言って''のように入れ子構造になっている場合は，最長の文字列を発言する．上記の例の場合``「〇〇」と言って''と発言する．
+\item{(機能2)} 文字列と翻訳規則を含むメッセージに対して，文字列を翻訳して発言する機能\\
+  この機能は，受信したメッセージに翻訳の要求があった場合，翻訳規則に沿って文字列を翻訳して発言する機能である．なお，翻訳には，Microsoft Translator API\cite{translator}を用いている．翻訳の要求の入力規則を以下に示す．
+  
+  @K-Bot 翻訳 (1)→(2)  ``(3)''\\
+  \begin{enumerate}
+  \item 翻訳前の言語
+  \item 翻訳後の言語
+  \item 翻訳してほしい文字列
+  \end{enumerate}
+  ただし，(1)，(2)に指定可能な言語は\tabref{tab:言語}の6つである．
+  以下に翻訳の要求の例を示す．
+
+  @K-Bot 翻訳　日→英 ``ありがとう''\\
+
+  この例では，Botは``Thank you''と発言する．
+
+  \begin{table}
+    \begin{center}
+      \caption{言語対応表} \label{tab:言語}
+      \begin{tabular}{l|l}
+        \hline\hline
+        言語 & 入力する文字\\ \hline
+        日本語 & 日\\
+        英語 & 英\\
+        フランス語 & 仏\\
+        スペイン語 & 西\\
+        ロシア語 & 露\\
+        アラビア語 & アラビア\\
+        \hline
+      \end{tabular}
+    \end{center}
+  \end{table}
+\end{description}
+
+なお，(機能1)，(機能2)の2つに対応するメッセージ以外のメッセージを受信した場合は，いずれも``Hi''と発言する．
+
+\section{動作環境}
+本プログラムの動作環境を\tabref{tab:動作環境}に示す．また，\tabref{tab:動作環境}に示す動作環境で本プログラムが正しく動作することを確認した．
+\begin{table}
+  \begin{center}
+    \caption{動作環境}\label{tab:動作環境}
+    \begin{tabular}{l|l}
+      \hline\hline
+      項目 & 内容\\
+      \hline
+      OS & Linux Debian GNU/Linux(version 8.1)\\
+      CPU & Intel(R) Core(TM) i5-4590 CPU(3.30GHz)\\
+      メモリ & 1.00GB\\
+      ブラウザ & Firefox 45.0.2\\
+      ソフトウェア & Ruby 2.1.5\\
+      & bundler 1.11.2\\
+      & git 2.1.4\\
+      & heroku-toolbelt 3.42.47\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+
+\section{環境構築}
+\subsection{概要}
+本プログラムを実行するために必要な環境構築の手順を以下に示す．
+\begin{enumerate}
+\item Incoming WebHooksの設定
+\item Outgoing WebHooksの設定
+\item Herokuの設定
+\item Microsoft Translator APIの設定
+\end{enumerate}
+それぞれの手順について，\ref{sec:具体的な手順}節に記述する．
+
+\subsection{具体的な手順}
+\label{sec:具体的な手順}
+\subsubsection{Incoming Webhooksの設定}
+\begin{enumerate}
+\item 自身のSlackアカウントにログインする．
+\item Custom Integrations(https://xxxxx.slack.com/apps/manage/custom-integrations)へアクセスする．ただしxxxxxはチーム名である．
+\item 「Incoming WebHooks」をクリックする．
+\item 「Add Configuration」から，新たなIncoming WebHooksを追加する．
+\item Botが発言するチャンネルを選択後，「Add Incoming WebHooks integration」をクリックし，Webhook URLを取得する．
+
+\end{enumerate}
+
+\subsubsection{Outgoing Webhooksの設定}
+\begin{enumerate}
+\item Custom Integrationsにアクセスする．
+\item 「Outgoing WebHooks」をクリックする．
+\item 「Add configuration」から，新たなOutgoing WebHookを追加する．
+\item 「Add Outgoing WebHooks integration」をクリックする．
+\item Outgoing WebHooksに関して以下を設定する．
+  \begin{enumerate}
+  \item Channel: 発言を監視するchannel
+  \item Trigger Word(s): WebHookが動作する契機となる単語(@K-Bot)
+  \item URL(s): WebHookが動作した際にPOSTを行うURL
+  \end{enumerate}
+\end{enumerate}
+
+\subsubsection{Herokuの設定}
+\begin{enumerate}
+\item Heroku(https://dashboard.heroku.com/)にアクセスする．
+\item 「Sign up」から新しいアカウントを登録する．
+\item Herokuから送信されたメールのに記載されているURLをクリックし，パスワードを設定する．
+\item 登録したアカウントでログインし，「Getting Started with Heroku」の使用する言語でRubyを選択する．
+\item 「I'm ready to start」をクリックし，「Download Heroku Toolbelt for...」からToolbeltをダウンロードする．
+\item ターミナルで以下のコマンドを実行し，Toolbeltがインストールされたことを確認する．
+  
+  \$ heroku version\\
+  
+\item 以下のコマンドを実行し，Herokuにログインする．
+  
+  \$ heroku login\\
+
+\item 本プログラムがあるディレクトリに移動する．
+  
+\item Heroku上にアプリケーションを生成するための以下のコマンドを実行する．
+  
+  \$ heroku create xxxxx\\
+  
+  ただし，xxxxxはアプリケーション名である．アプリケーション名は小文字と数字，およびハイフンのみ使用できる．
+  
+\item 以下のコマンドを実行し，アプリケーションが生成されていることを確認する．
+  
+  \$ git remote -v\\
+
+  なお，アプリケーションが生成されることは，以下の文字列が表示されることで確認できる
+  
+  heroku https://git.heroku.com/xxxxx.git (fetch)\\
+  heroku https://git.heroku.com/xxxxx.git (push)\\
+
+\item 以下のコマンドを実行し，5.2.1の(6)で取得したWebHook URLを，Herokuの環境変数に設定する．
+
+  \$ heroku config:set INCOMING\_WEBHOOK = ``https://xxxxxxxx''
+  
+\end{enumerate}
+
+
+\subsubsection{Microsoft Translator APIの設定}
+\begin{enumerate}
+\item Microsoft Azure Marketplace(https://datamarket.azure.com/home)にアクセスする．
+\item 自身のMicrosoftアカウントにサインインする．
+\item 「データ」をクリックする．
+\item 「Microsogt Translator - Text Translation」をクリックする．
+\item 「サインアップ」をクリックする．
+\item 以下の項目を設定する
+  \begin{enumerate}
+  \item クライアントID
+  \item 名前
+  \item 顧客の秘密
+  \item リダイレクトURI\\
+    例：https://localhost/
+    
+  \end{enumerate}
+\item 設定したクライアントID，顧客の秘密をそれぞれMySlackBot.rbのMySlackBotクラス以下のCLIENT\_ID，CLIENT\_SECRETの欄に以下のように記述する．
+  
+  CLEINT\_ID = ``(クライアントID)''\\
+  CLIENT\_SECRET = ``(顧客の秘密)''\\
+
+\end{enumerate}
+\subsubsection{Gemのインストール}
+\begin{enumerate}
+\item Gemをインストールするために，以下のコマンドを実行する．
+  
+  \$ bundle install --path vendor/bundle\\
+
+\end{enumerate}
+
+\section{使用方法}
+本プログラムは，Heroku上で実行することを想定している．このため，Herokuへデプロイするとプログラムは実行状態となる．Herokuへデプロイする手順を以下にに示す．
+\begin{enumerate}
+\item 以下のコマンドを実行し，変更をコミットする．
+  
+  \$ git add MySlackBot.rb\\
+  \$ git commit\\
+  
+\item 以下のコマンドを実行し，herokuにプッシュする．
+  
+  \$ git push heroku master\\
+\end{enumerate}
+
+\section{エラー処理と保証しない動作}
+\subsection{エラー処理}
+本プログラムのエラー処理を以下に示す．
+\begin{enumerate}
+\item (機能2)において以下の2つのエラー処理を実装した．
+  \begin{enumerate}
+  \item　\tabref{tab:言語}に示していない言語が指定された場合，Botは以下の発言をする．
+
+    対応している言語は以下の言語です．\\
+    日本語：日\\
+    英語：英\\
+    フランス語：仏\\
+    スペイン語：西\\
+    ロシア語：露\\
+    アラビア語：アラビア\\
+
+  \item メッセージのフォーマットが翻訳の要求に沿っていない場合，Botは以下の発言をする．
+
+    翻訳のフォーマットは以下のとおりです．\\
+    翻訳 翻訳前の言語→翻訳後の言語 ``文字列"\\
+  \end{enumerate}
+\end{enumerate}
+
+
+
+
+\subsection{保証しない動作}
+本プログラムの保証しない動作を以下に示す．
+\begin{enumerate}
+\item \tabref{tab:動作環境}に示す動作環境以外でプログラムを実行
+\item SlackのOutgoing WebHooks以外からPOSTリクエストを受け取ったときの処理
+\end{enumerate}
+
+\bibliographystyle{ipsjunsrt}
+\bibliography{mybibdata}
+
+\end{document}
